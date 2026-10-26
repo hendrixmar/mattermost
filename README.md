@@ -22,6 +22,7 @@ Table of contents
 =================
 
 - [Install Mattermost](#install-mattermost)
+- [Configure company OIDC](#configure-company-oidc)
 - [Native mobile and desktop apps](#native-mobile-and-desktop-apps)
 - [Get security bulletins](#get-security-bulletins)
 - [Get involved](#get-involved)
@@ -46,6 +47,12 @@ Other install guides:
 - [Kubernetes](https://docs.mattermost.com/install/install-kubernetes.html)
 - [Helm](https://docs.mattermost.com/install/install-kubernetes.html#installing-the-operators-via-helm)
 - [More server install guides](https://docs.mattermost.com/guides/deployment.html)
+
+## Configure company OIDC
+
+This fork includes OpenID Connect SSO in Team Edition without a paid license: Google Apps, Entra ID, GitLab, and OpenID Connect (Other). Use a server and webapp built from this checkout. Upstream binaries and container images do not include this change.
+
+Follow the [OIDC setup guide](docs/main/administration-guide/onboard/sso-openidconnect.mdx) to register your company identity provider and configure **System Console > Authentication > OpenID Connect**. Existing authentication permissions, account-creation controls, legacy OAuth 2.0 licensing, and unrelated enterprise features remain in place.
 
 ## Native mobile and desktop apps
 

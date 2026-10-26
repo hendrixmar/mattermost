@@ -79,13 +79,10 @@ import {
     CustomTermsOfServiceFeatureDiscovery,
     DataSpillageFeatureDiscovery,
     DataRetentionFeatureDiscovery,
-    GitLabFeatureDiscovery,
     GroupsFeatureDiscovery,
     GuestAccessFeatureDiscovery,
     LDAPFeatureDiscovery,
     MobileSecurityFeatureDiscovery,
-    OpenIDCustomFeatureDiscovery,
-    OpenIDFeatureDiscovery,
     SAMLFeatureDiscovery,
     SystemRolesFeatureDiscovery,
 } from './feature_discovery/features';
@@ -5192,10 +5189,7 @@ const AdminDefinition: AdminDefinitionType = {
                             type: 'custom',
                             component: OpenIdConvert,
                             key: 'OpenIdConvert',
-                            isHidden: it.any(
-                                it.all(it.not(it.licensedForFeature('OpenId')), it.not(it.cloudLicensed)),
-                                it.not(usesLegacyOauth),
-                            ),
+                            isHidden: it.not(usesLegacyOauth),
                             isDisabled: it.not(it.userHasWritePermissionOnResource(RESOURCE_KEYS.AUTHENTICATION.OPENID)),
                         },
                         {
@@ -5463,10 +5457,7 @@ const AdminDefinition: AdminDefinitionType = {
             openid: {
                 url: 'authentication/openid',
                 title: defineMessage({id: 'admin.sidebar.openid', defaultMessage: 'OpenID Connect'}),
-                isHidden: it.any(
-                    it.all(it.not(it.licensedForFeature('OpenId')), it.not(it.cloudLicensed)),
-                    it.not(it.userHasReadPermissionOnResource(RESOURCE_KEYS.AUTHENTICATION.OPENID)),
-                ),
+                isHidden: it.not(it.userHasReadPermissionOnResource(RESOURCE_KEYS.AUTHENTICATION.OPENID)),
                 schema: {
                     id: 'OpenIdSettings',
                     name: defineMessage({id: 'admin.authentication.openid', defaultMessage: 'OpenID Connect'}),
@@ -5540,7 +5531,6 @@ const AdminDefinition: AdminDefinitionType = {
                             type: 'dropdown',
                             key: 'openidType',
                             label: defineMessage({id: 'admin.openid.select', defaultMessage: 'Select service provider:'}),
-                            isHelpHidden: it.all(it.stateEquals('openidType', Constants.OPENID_SERVICE), it.licensedForCloudStarter),
                             options: [
                                 {
                                     value: 'off',
@@ -5750,7 +5740,7 @@ const AdminDefinition: AdminDefinitionType = {
                             label: defineMessage({id: 'admin.openid.buttonTextTitle', defaultMessage: 'Button Name:'}),
                             placeholder: defineMessage({id: 'admin.openid.buttonTextEx', defaultMessage: 'Custom Button Name'}),
                             help_text: defineMessage({id: 'admin.openid.buttonTextDesc', defaultMessage: 'The text that will show on the login button.'}),
-                            isHidden: it.any(it.not(it.stateEquals('openidType', Constants.OPENID_SERVICE)), it.licensedForCloudStarter),
+                            isHidden: it.not(it.stateEquals('openidType', Constants.OPENID_SERVICE)),
                             isDisabled: it.not(it.userHasWritePermissionOnResource(RESOURCE_KEYS.AUTHENTICATION.OPENID)),
                         },
                         {
@@ -5759,7 +5749,7 @@ const AdminDefinition: AdminDefinitionType = {
                             label: defineMessage({id: 'admin.openid.buttonColorTitle', defaultMessage: 'Button Color:'}),
                             help_text: defineMessage({id: 'admin.openid.buttonColorDesc', defaultMessage: 'Specify the color of the OpenID login button for white labeling purposes. Use a hex code with a #-sign before the code.'}),
                             help_text_markdown: false,
-                            isHidden: it.any(it.not(it.stateEquals('openidType', Constants.OPENID_SERVICE)), it.licensedForCloudStarter),
+                            isHidden: it.not(it.stateEquals('openidType', Constants.OPENID_SERVICE)),
                             isDisabled: it.not(it.userHasWritePermissionOnResource(RESOURCE_KEYS.AUTHENTICATION.OPENID)),
                         },
                         {
@@ -5769,7 +5759,7 @@ const AdminDefinition: AdminDefinitionType = {
                             placeholder: defineMessage({id: 'admin.openid.discovery.placeholder', defaultMessage: 'https://id.mydomain.com/.well-known/openid-configuration'}),
                             help_text: defineMessage({id: 'admin.openid.discoveryEndpointDesc', defaultMessage: 'Enter the URL of the discovery document of the OpenID Connect provider you want to connect with.'}),
                             help_text_markdown: false,
-                            isHidden: it.any(it.not(it.stateEquals('openidType', Constants.OPENID_SERVICE)), it.licensedForCloudStarter),
+                            isHidden: it.not(it.stateEquals('openidType', Constants.OPENID_SERVICE)),
                             isDisabled: it.not(it.userHasWritePermissionOnResource(RESOURCE_KEYS.AUTHENTICATION.OPENID)),
                         },
                         {
@@ -5778,7 +5768,7 @@ const AdminDefinition: AdminDefinitionType = {
                             label: defineMessage({id: 'admin.openid.clientIdTitle', defaultMessage: 'Client ID:'}),
                             help_text: defineMessage({id: 'admin.openid.clientIdDescription', defaultMessage: 'Obtaining the Client ID differs across providers. Please check your provider\'s documentation.'}),
                             placeholder: defineMessage({id: 'admin.openid.clientIdExample', defaultMessage: 'E.g.: "adf3sfa2-ag3f-sn4n-ids0-sh1hdax192qq"'}),
-                            isHidden: it.any(it.not(it.stateEquals('openidType', Constants.OPENID_SERVICE)), it.licensedForCloudStarter),
+                            isHidden: it.not(it.stateEquals('openidType', Constants.OPENID_SERVICE)),
                             isDisabled: it.not(it.userHasWritePermissionOnResource(RESOURCE_KEYS.AUTHENTICATION.OPENID)),
                         },
                         {
@@ -5787,7 +5777,7 @@ const AdminDefinition: AdminDefinitionType = {
                             label: defineMessage({id: 'admin.openid.clientSecretTitle', defaultMessage: 'Client Secret:'}),
                             help_text: defineMessage({id: 'admin.openid.clientSecretDescription', defaultMessage: 'Obtaining the Client Secret differs across providers. Please check your provider\'s documentation.'}),
                             placeholder: defineMessage({id: 'admin.openid.clientSecretExample', defaultMessage: 'E.g.: "H8sz0Az-dDs2p15-7QzD231"'}),
-                            isHidden: it.any(it.not(it.stateEquals('openidType', Constants.OPENID_SERVICE)), it.licensedForCloudStarter),
+                            isHidden: it.not(it.stateEquals('openidType', Constants.OPENID_SERVICE)),
                             isDisabled: it.not(it.userHasWritePermissionOnResource(RESOURCE_KEYS.AUTHENTICATION.OPENID)),
                         },
                         {
@@ -5796,7 +5786,7 @@ const AdminDefinition: AdminDefinitionType = {
                             label: defineMessage({id: 'admin.openid.additionalScopesTitle', defaultMessage: 'Additional Scopes:'}),
                             help_text: defineMessage({id: 'admin.openid.additionalScopesDescription', defaultMessage: 'Space-separated scopes to request in addition to profile, openid and email, for claims your provider releases only under another scope, such as groups.'}),
                             placeholder: defineMessage({id: 'admin.openid.additionalScopesExample', defaultMessage: 'E.g.: "groups"'}),
-                            isHidden: it.any(it.not(it.stateEquals('openidType', Constants.OPENID_SERVICE)), it.licensedForCloudStarter),
+                            isHidden: it.not(it.stateEquals('openidType', Constants.OPENID_SERVICE)),
                             isDisabled: it.not(it.userHasWritePermissionOnResource(RESOURCE_KEYS.AUTHENTICATION.OPENID)),
                         },
                         {
@@ -5833,63 +5823,12 @@ const AdminDefinition: AdminDefinitionType = {
                             isHidden: it.any(
                                 it.not(it.stateEquals('openidType', Constants.OPENID_SERVICE)),
                                 it.not(it.minLicenseTier(LicenseSkus.Enterprise)),
-                                it.not(it.licensedForFeature('OpenId')),
                                 it.not(it.configIsTrue('FeatureFlags', 'OpenIdAttributeSync')),
                             ),
                             isDisabled: it.not(it.userHasWritePermissionOnResource(RESOURCE_KEYS.AUTHENTICATION.OPENID)),
                         },
-                        {
-                            type: 'custom',
-                            key: 'OpenIDCustomFeatureDiscovery',
-                            component: OpenIDCustomFeatureDiscovery,
-                            isHidden: it.not(it.all(it.stateEquals('openidType', Constants.OPENID_SERVICE), it.licensedForCloudStarter)),
-                            isDisabled: it.not(it.userHasWritePermissionOnResource(RESOURCE_KEYS.AUTHENTICATION.OPENID)),
-                        },
                     ],
                 },
-                restrictedIndicator: getRestrictedIndicator(),
-            },
-            openid_feature_discovery: {
-                url: 'authentication/openid',
-                isDiscovery: true,
-                title: defineMessage({id: 'admin.sidebar.openid', defaultMessage: 'OpenID Connect'}),
-                isHidden: it.any(
-                    it.any(it.licensedForFeature('OpenId'), it.cloudLicensed),
-                ),
-                schema: {
-                    id: 'OpenIdSettings',
-                    name: defineMessage({id: 'admin.authentication.openid', defaultMessage: 'OpenID Connect'}),
-                    settings: [
-                        {
-                            type: 'custom',
-                            component: OpenIDFeatureDiscovery,
-                            key: 'OpenIDFeatureDiscovery',
-                            isDisabled: it.not(it.userHasWritePermissionOnResource(RESOURCE_KEYS.ABOUT.EDITION_AND_LICENSE)),
-                        },
-                    ],
-                },
-                restrictedIndicator: getRestrictedIndicator(true),
-            },
-            gitlab_feature_discovery: {
-                url: 'authentication/gitlab',
-                isDiscovery: true,
-                title: defineMessage({id: 'admin.sidebar.gitlab', defaultMessage: 'GitLab'}),
-                isHidden: it.any(
-                    it.licensedForFeature('OpenId'),
-                ),
-                schema: {
-                    id: 'GitLabSettings',
-                    name: defineMessage({id: 'admin.authentication.gitlab', defaultMessage: 'GitLab'}),
-                    settings: [
-                        {
-                            type: 'custom',
-                            component: GitLabFeatureDiscovery,
-                            key: 'GitLabFeatureDiscovery',
-                            isDisabled: it.not(it.userHasWritePermissionOnResource(RESOURCE_KEYS.ABOUT.EDITION_AND_LICENSE)),
-                        },
-                    ],
-                },
-                restrictedIndicator: getRestrictedIndicator(true),
             },
             guest_access: {
                 url: 'authentication/guest_access',

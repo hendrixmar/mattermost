@@ -455,7 +455,7 @@ func (a *App) CreateOAuthUser(rctx request.CTX, service string, userData io.Read
 		return nil, false, e
 	}
 
-	settings, getErr := provider.GetSSOSettings(rctx, a.Config(), service)
+	settings, getErr := provider.GetSSOSettings(rctx, a.Config(), service, a.HTTPService().MakeClient(false))
 	if getErr != nil {
 		return nil, false, model.NewAppError("CreateOAuthUser", "api.user.oauth.get_settings.app_error", map[string]any{"Service": service}, "", http.StatusInternalServerError).Wrap(getErr)
 	}
@@ -2657,7 +2657,7 @@ func (a *App) AutocompleteUsersInTeam(rctx request.CTX, teamID string, term stri
 }
 
 func (a *App) UpdateOAuthUserAttrs(rctx request.CTX, userData io.Reader, user *model.User, provider einterfaces.OAuthProvider, service string, tokenUser *model.User) *model.AppError {
-	settings, err := provider.GetSSOSettings(rctx, a.Config(), service)
+	settings, err := provider.GetSSOSettings(rctx, a.Config(), service, a.HTTPService().MakeClient(false))
 	if err != nil {
 		return model.NewAppError("UpdateOAuthUserAttrs", "api.user.oauth.get_settings.app_error", map[string]any{"Service": service}, "", http.StatusInternalServerError).Wrap(err)
 	}

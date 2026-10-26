@@ -81,7 +81,7 @@ func TestCreateOAuthUser(t *testing.T) {
 		providerMock := &mocks.OAuthProvider{}
 		providerMock.On("IsSameUser", mock.AnythingOfType("*request.Context"), mock.Anything, mock.Anything).Return(true)
 		providerMock.On("GetUserFromJSON", mock.AnythingOfType("*request.Context"), mock.Anything, mock.Anything, mock.Anything).Return(mockUser, nil)
-		providerMock.On("GetSSOSettings", mock.AnythingOfType("*request.Context"), mock.Anything, mock.Anything).Return(mockSSOSettings, nil)
+		providerMock.On("GetSSOSettings", mock.AnythingOfType("*request.Context"), mock.Anything, mock.Anything, mock.Anything).Return(mockSSOSettings, nil)
 		einterfaces.RegisterOAuthProvider(model.ServiceOffice365, providerMock)
 
 		// Update user to be OAuth, formatting to match Office365 OAuth data

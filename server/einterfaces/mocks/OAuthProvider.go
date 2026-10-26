@@ -6,6 +6,7 @@ package mocks
 
 import (
 	io "io"
+	http "net/http"
 
 	model "github.com/mattermost/mattermost/server/public/model"
 	request "github.com/mattermost/mattermost/server/public/shared/request"
@@ -17,9 +18,9 @@ type OAuthProvider struct {
 	mock.Mock
 }
 
-// GetSSOSettings provides a mock function with given fields: rctx, config, service
-func (_m *OAuthProvider) GetSSOSettings(rctx request.CTX, config *model.Config, service string) (*model.SSOSettings, error) {
-	ret := _m.Called(rctx, config, service)
+// GetSSOSettings provides a mock function with given fields: rctx, config, service, client
+func (_m *OAuthProvider) GetSSOSettings(rctx request.CTX, config *model.Config, service string, client *http.Client) (*model.SSOSettings, error) {
+	ret := _m.Called(rctx, config, service, client)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetSSOSettings")
@@ -27,19 +28,19 @@ func (_m *OAuthProvider) GetSSOSettings(rctx request.CTX, config *model.Config, 
 
 	var r0 *model.SSOSettings
 	var r1 error
-	if rf, ok := ret.Get(0).(func(request.CTX, *model.Config, string) (*model.SSOSettings, error)); ok {
-		return rf(rctx, config, service)
+	if rf, ok := ret.Get(0).(func(request.CTX, *model.Config, string, *http.Client) (*model.SSOSettings, error)); ok {
+		return rf(rctx, config, service, client)
 	}
-	if rf, ok := ret.Get(0).(func(request.CTX, *model.Config, string) *model.SSOSettings); ok {
-		r0 = rf(rctx, config, service)
+	if rf, ok := ret.Get(0).(func(request.CTX, *model.Config, string, *http.Client) *model.SSOSettings); ok {
+		r0 = rf(rctx, config, service, client)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*model.SSOSettings)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(request.CTX, *model.Config, string) error); ok {
-		r1 = rf(rctx, config, service)
+	if rf, ok := ret.Get(1).(func(request.CTX, *model.Config, string, *http.Client) error); ok {
+		r1 = rf(rctx, config, service, client)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -47,9 +48,9 @@ func (_m *OAuthProvider) GetSSOSettings(rctx request.CTX, config *model.Config, 
 	return r0, r1
 }
 
-// GetUserFromIdToken provides a mock function with given fields: rctx, idToken
-func (_m *OAuthProvider) GetUserFromIdToken(rctx request.CTX, idToken string) (*model.User, error) {
-	ret := _m.Called(rctx, idToken)
+// GetUserFromIdToken provides a mock function with given fields: rctx, idToken, settings, client
+func (_m *OAuthProvider) GetUserFromIdToken(rctx request.CTX, idToken string, settings *model.SSOSettings, client *http.Client) (*model.User, error) {
+	ret := _m.Called(rctx, idToken, settings, client)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetUserFromIdToken")
@@ -57,19 +58,19 @@ func (_m *OAuthProvider) GetUserFromIdToken(rctx request.CTX, idToken string) (*
 
 	var r0 *model.User
 	var r1 error
-	if rf, ok := ret.Get(0).(func(request.CTX, string) (*model.User, error)); ok {
-		return rf(rctx, idToken)
+	if rf, ok := ret.Get(0).(func(request.CTX, string, *model.SSOSettings, *http.Client) (*model.User, error)); ok {
+		return rf(rctx, idToken, settings, client)
 	}
-	if rf, ok := ret.Get(0).(func(request.CTX, string) *model.User); ok {
-		r0 = rf(rctx, idToken)
+	if rf, ok := ret.Get(0).(func(request.CTX, string, *model.SSOSettings, *http.Client) *model.User); ok {
+		r0 = rf(rctx, idToken, settings, client)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*model.User)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(request.CTX, string) error); ok {
-		r1 = rf(rctx, idToken)
+	if rf, ok := ret.Get(1).(func(request.CTX, string, *model.SSOSettings, *http.Client) error); ok {
+		r1 = rf(rctx, idToken, settings, client)
 	} else {
 		r1 = ret.Error(1)
 	}

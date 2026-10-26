@@ -759,11 +759,11 @@ func (m *MattermostTestProvider) GetUserFromJSON(_ request.CTX, data io.Reader, 
 	return &user, nil
 }
 
-func (m *MattermostTestProvider) GetSSOSettings(_ request.CTX, config *model.Config, service string) (*model.SSOSettings, error) {
+func (m *MattermostTestProvider) GetSSOSettings(_ request.CTX, config *model.Config, service string, _ *http.Client) (*model.SSOSettings, error) {
 	return &config.GitLabSettings, nil
 }
 
-func (m *MattermostTestProvider) GetUserFromIdToken(_ request.CTX, token string) (*model.User, error) {
+func (m *MattermostTestProvider) GetUserFromIdToken(_ request.CTX, token string, _ *model.SSOSettings, _ *http.Client) (*model.User, error) {
 	return nil, nil
 }
 

@@ -799,8 +799,10 @@ func TestAuthorizeOAuthUser(t *testing.T) {
 		})
 
 		providerMock := &mocks.OAuthProvider{}
-		providerMock.On("GetSSOSettings", mock.AnythingOfType("*request.Context"), mock.Anything, model.ServiceOpenid).Return(nil, errors.New("error"))
+		providerMock.On("GetSSOSettings", mock.AnythingOfType("*request.Context"), mock.Anything, model.ServiceOpenid, mock.Anything).Return(nil, errors.New("error"))
+		previous := einterfaces.GetOAuthProvider(model.ServiceOpenid)
 		einterfaces.RegisterOAuthProvider(model.ServiceOpenid, providerMock)
+		t.Cleanup(func() { einterfaces.RegisterOAuthProvider(model.ServiceOpenid, previous) })
 
 		_, _, err := th.App.AuthorizeOAuthUser(th.Context, nil, nil, model.ServiceOpenid, "", "", "")
 		require.NotNil(t, err)
@@ -1921,11 +1923,12 @@ func TestParseOAuthStateTokenExtra(t *testing.T) {
 }
 
 func TestAuthorizeOAuthUser_InvalidToken(t *testing.T) {
-	mainHelper.Parallel(t)
 	th := Setup(t)
 
 	mockProvider := &mocks.OAuthProvider{}
+	previous := einterfaces.GetOAuthProvider(model.ServiceOpenid)
 	einterfaces.RegisterOAuthProvider(model.ServiceOpenid, mockProvider)
+	t.Cleanup(func() { einterfaces.RegisterOAuthProvider(model.ServiceOpenid, previous) })
 
 	service := model.ServiceOpenid
 	th.App.UpdateConfig(func(cfg *model.Config) {
@@ -1936,7 +1939,7 @@ func TestAuthorizeOAuthUser_InvalidToken(t *testing.T) {
 		cfg.OpenIdSettings.Scope = new(OpenIDScope)
 	})
 
-	mockProvider.On("GetSSOSettings", mock.Anything, mock.Anything, service).Return(&model.SSOSettings{
+	mockProvider.On("GetSSOSettings", mock.Anything, mock.Anything, service, mock.Anything).Return(&model.SSOSettings{
 		Enable: new(true),
 		Id:     new("test-client-id"),
 		Secret: new("test-secret"),

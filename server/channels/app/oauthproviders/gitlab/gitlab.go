@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"net/http"
 	"strconv"
 	"strings"
 
@@ -106,11 +107,11 @@ func (gp *GitLabProvider) GetUserFromJSON(rctx request.CTX, data io.Reader, toke
 	return userFromGitLabUser(rctx.Logger(), glu, settings), nil
 }
 
-func (gp *GitLabProvider) GetSSOSettings(_ request.CTX, config *model.Config, service string) (*model.SSOSettings, error) {
+func (gp *GitLabProvider) GetSSOSettings(_ request.CTX, config *model.Config, service string, _ *http.Client) (*model.SSOSettings, error) {
 	return &config.GitLabSettings, nil
 }
 
-func (gp *GitLabProvider) GetUserFromIdToken(_ request.CTX, idToken string) (*model.User, error) {
+func (gp *GitLabProvider) GetUserFromIdToken(_ request.CTX, idToken string, _ *model.SSOSettings, _ *http.Client) (*model.User, error) {
 	return nil, nil
 }
 

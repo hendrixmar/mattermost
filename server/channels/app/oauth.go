@@ -791,7 +791,7 @@ func (a *App) getSSOProvider(service string) (einterfaces.OAuthProvider, *model.
 		return nil, model.NewAppError("getSSOProvider", "api.user.authorize_oauth_user.unsupported.app_error", nil, "service="+service, http.StatusNotImplemented)
 	}
 	providerType := service
-	if strings.Contains(*sso.Scope, OpenIDScope) {
+	if model.HasOpenIDScope(model.SafeDereference(sso.Scope)) {
 		providerType = model.ServiceOpenid
 	}
 	provider := einterfaces.GetOAuthProvider(providerType)
@@ -814,7 +814,7 @@ func (a *App) LoginByOAuth(rctx request.CTX, service string, userData io.Reader,
 			map[string]any{"Service": service}, "", http.StatusBadRequest)
 	}
 
-	settings, err2 := provider.GetSSOSettings(rctx, a.Config(), service)
+	settings, err2 := provider.GetSSOSettings(rctx, a.Config(), service, a.HTTPService().MakeClient(false))
 	if err2 != nil {
 		return nil, false, model.NewAppError("LoginByOAuth", "api.user.oauth.get_settings.app_error",
 			map[string]any{"Service": service}, "", http.StatusBadRequest).Wrap(err2)
@@ -928,7 +928,7 @@ func (a *App) CompleteSwitchWithOAuth(rctx request.CTX, service string, userData
 		return nil, model.NewAppError("CompleteSwitchWithOAuth", "api.user.complete_switch_with_oauth.blank_email.app_error", nil, "", http.StatusBadRequest)
 	}
 
-	settings, err := provider.GetSSOSettings(rctx, a.Config(), service)
+	settings, err := provider.GetSSOSettings(rctx, a.Config(), service, a.HTTPService().MakeClient(false))
 	if err != nil {
 		return nil, model.NewAppError("CompleteSwitchWithOAuth", "api.user.oauth.get_settings.app_error",
 			map[string]any{"Service": service}, "", http.StatusBadRequest).Wrap(err)
@@ -1008,7 +1008,7 @@ func (a *App) GetAuthorizationCode(rctx request.CTX, w http.ResponseWriter, r *h
 		return "", e
 	}
 
-	sso, e2 := provider.GetSSOSettings(rctx, a.Config(), service)
+	sso, e2 := provider.GetSSOSettings(rctx, a.Config(), service, a.HTTPService().MakeClient(false))
 	if e2 != nil {
 		return "", model.NewAppError("GetAuthorizationCode.GetSSOSettings", "api.user.get_authorization_code.endpoint.app_error", nil, "", http.StatusNotImplemented).Wrap(e2)
 	}
@@ -1085,7 +1085,7 @@ func (a *App) AuthorizeOAuthUser(rctx request.CTX, w http.ResponseWriter, r *htt
 		return nil, nil, e
 	}
 
-	sso, e2 := provider.GetSSOSettings(rctx, a.Config(), service)
+	sso, e2 := provider.GetSSOSettings(rctx, a.Config(), service, a.HTTPService().MakeClient(false))
 	if e2 != nil {
 		return nil, nil, model.NewAppError("AuthorizeOAuthUser.GetSSOSettings", "api.user.get_authorization_code.endpoint.app_error", nil, "", http.StatusNotImplemented).Wrap(e2)
 	}
@@ -1183,7 +1183,7 @@ func (a *App) AuthorizeOAuthUser(rctx request.CTX, w http.ResponseWriter, r *htt
 
 	var userFromToken *model.User
 	if ar.IdToken != "" {
-		userFromToken, err = provider.GetUserFromIdToken(rctx, ar.IdToken)
+		userFromToken, err = provider.GetUserFromIdToken(rctx, ar.IdToken, sso, a.HTTPService().MakeClient(false))
 		if err != nil {
 			return nil, stateProps, model.NewAppError("AuthorizeOAuthUser", "api.user.authorize_oauth_user.token_failed.app_error", nil, "", http.StatusInternalServerError).Wrap(err)
 		}

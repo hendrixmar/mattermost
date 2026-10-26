@@ -8,8 +8,7 @@ import {RESOURCE_KEYS} from 'mattermost-redux/constants/permissions_sysconsole';
 import Constants, {LicenseSkus} from 'utils/constants';
 
 import AdminDefinition from './admin_definition';
-import CustomProfileAttributes from './custom_profile_attributes/custom_profile_attributes';
-import type {AdminDefinitionSetting, Check, ConsoleAccess} from './types';
+import type {AdminDefinitionSetting, ConsoleAccess} from './types';
 
 const consoleAccess = {
     read: {[RESOURCE_KEYS.AUTHENTICATION.OPENID]: true},
@@ -17,6 +16,8 @@ const consoleAccess = {
 } as ConsoleAccess;
 
 const enterpriseOpenIdLicense = {IsLicensed: 'true', SkuShortName: LicenseSkus.Enterprise, OpenId: 'true'} as ClientLicense;
+const communityLicense: ClientLicense = {IsLicensed: 'false', Cloud: 'false', OpenId: 'false'};
+const cloudStarterLicense: ClientLicense = {IsLicensed: 'true', Cloud: 'true', SkuShortName: 'starter'};
 
 const flagOn = {FeatureFlags: {OpenIdAttributeSync: true}} as unknown as Partial<AdminConfig>;
 const flagOff = {FeatureFlags: {OpenIdAttributeSync: false}} as unknown as Partial<AdminConfig>;
@@ -33,28 +34,45 @@ function getSetting(key: string): AdminDefinitionSetting {
 }
 
 function check(setting: AdminDefinitionSetting, prop: 'isHidden' | 'isDisabled', config: Partial<AdminConfig>, state: Record<string, unknown>, license: ClientLicense, access = consoleAccess) {
-    const fn = setting[prop] as Extract<Check, (...args: any[]) => boolean>;
+    const fn = setting[prop];
+    if (typeof fn !== 'function') {
+        throw new Error(`setting ${setting.key} must have a ${prop} check`);
+    }
     return fn(config, state, license, true, access);
 }
 
 describe('AdminDefinition - OpenID Connect attribute sync', () => {
+    describe('generic OpenID settings', () => {
+        test('shows the OpenID Connect settings to an unlicensed self-hosted admin with read access', () => {
+            const isHidden = AdminDefinition.authentication.subsections.openid.isHidden;
+            if (typeof isHidden !== 'function') {
+                throw new Error('OpenID Connect subsection must have a visibility check');
+            }
+
+            expect(isHidden({}, openIdState, communityLicense, true, consoleAccess)).toBe(false);
+        });
+
+        test('keeps the OpenID Connect settings hidden without read access', () => {
+            const isHidden = AdminDefinition.authentication.subsections.openid.isHidden;
+            if (typeof isHidden !== 'function') {
+                throw new Error('OpenID Connect subsection must have a visibility check');
+            }
+
+            expect(isHidden({}, openIdState, communityLicense, true, {...consoleAccess, read: {}} as ConsoleAccess)).toBe(true);
+        });
+    });
+
     describe('User attributes sync section', () => {
         const setting = getSetting('OpenIdSettings.CustomProfileAttributes');
 
-        test('mounts the shared CustomProfileAttributes component', () => {
-            expect(setting.type).toBe('custom');
-            expect((setting as Extract<AdminDefinitionSetting, {type: 'custom'}>).component).toBe(CustomProfileAttributes);
-        });
-
-        test('shows for a generic OpenID provider with an Enterprise license that includes OpenID Connect and the flag on', () => {
-            expect(check(setting, 'isHidden', flagOn, openIdState, enterpriseOpenIdLicense)).toBe(false);
+        test('shows for generic OpenID with the Enterprise attributes feature and flag, without an OpenID entitlement', () => {
+            expect(check(setting, 'isHidden', flagOn, openIdState, {...enterpriseOpenIdLicense, OpenId: 'false'})).toBe(false);
         });
 
         test.each([
             ['another provider is selected', flagOn, {openidType: Constants.GITLAB_SERVICE}, enterpriseOpenIdLicense],
             ['the flag is off', flagOff, openIdState, enterpriseOpenIdLicense],
             ['the license tier is below Enterprise', flagOn, openIdState, {...enterpriseOpenIdLicense, SkuShortName: LicenseSkus.Professional}],
-            ['the license does not include OpenID Connect', flagOn, openIdState, {...enterpriseOpenIdLicense, OpenId: 'false'}],
         ])('hides when %s', (_, config, state, license) => {
             expect(check(setting, 'isHidden', config, state, license as ClientLicense)).toBe(true);
         });
@@ -68,10 +86,11 @@ describe('AdminDefinition - OpenID Connect attribute sync', () => {
     describe('Additional Scopes', () => {
         const setting = getSetting('OpenIdSettings.AdditionalScopes');
 
-        test('is a text setting shown for the generic OpenID provider only', () => {
+        test('is a text setting shown for generic OpenID without a paid license', () => {
             expect(setting.type).toBe('text');
-            expect(check(setting, 'isHidden', flagOn, openIdState, enterpriseOpenIdLicense)).toBe(false);
-            expect(check(setting, 'isHidden', flagOn, {openidType: Constants.GOOGLE_SERVICE}, enterpriseOpenIdLicense)).toBe(true);
+            expect(check(setting, 'isHidden', flagOn, openIdState, communityLicense)).toBe(false);
+            expect(check(setting, 'isHidden', flagOn, openIdState, cloudStarterLicense)).toBe(false);
+            expect(check(setting, 'isHidden', flagOn, {openidType: Constants.GOOGLE_SERVICE}, communityLicense)).toBe(true);
         });
     });
 });

@@ -1,7 +1,7 @@
 ---
 title: "GitLab Single Sign-On"
 ---
-<PlanAvailability slug="all-commercial" />
+GitLab OpenID Connect sign-in is available in Team Edition builds from this fork without a paid Mattermost license.
 
 ## Configuring GitLab as a Single Sign-On (SSO) service
 
@@ -9,7 +9,7 @@ Follow these steps to configure Mattermost to use GitLab as a Single Sign-on (SS
 
 <Important>
 
-\- Only the default GitLab SSO is officially supported. - "Double SSO", where GitLab SSO is chained to other SSO solutions, is not supported. It may be possible to connect GitLab SSO with AD, LDAP, SAML, or MFA add-ons in some cases, but because of the special logic required, they're not officially supported, and they're known not to work in some cases. - [Mattermost Free (self-hosted only)](/product-overview/editions-and-offerings) supports the OAuth 2.0 standard. - [Mattermost Professional](/product-overview/editions-and-offerings) and [Mattermost Enterprise](/product-overview/editions-and-offerings) support the OpenID Connect standard.
+These steps cover GitLab OIDC. Legacy OAuth 2.0 licensing is unchanged. Chaining GitLab to another identity provider requires separate integration testing.
 
 </Important>
 
@@ -19,18 +19,15 @@ Follow these steps to configure Mattermost to use GitLab as a Single Sign-on (SS
 2.  Add a new application:
 
 > 1.  In the **Name** field, enter `Mattermost`.
-> 2.  In the **Redirect URI** field, add the following two lines using your own value for *&#123;mattermost-site-name&#125;*.
+> 2.  Register the following **Redirect URI**, using your public Mattermost URL and including any configured subpath.
 >
 > > ``` text
-> > https://&#123;mattermost-site-name&#125;/login/gitlab/complete
-> > https://&#123;mattermost-site-name&#125;/signup/gitlab/complete
+> > https://mattermost.company.example/signup/gitlab/complete
 > > ```
 > >
-> > If your GitLab instance is not set up to use SSL, your URIs must begin with `http://` instead of `https://`.
+> > Use HTTPS. Plain HTTP is supported only for loopback development fixtures.
 >
-> 3.  Select scopes.
->     - For Mattermost Team Edition, select `read_user`.
->     - For Mattermost Enterprise, select `read_user`, `openid`, `profile`, and `email`.
+> 3.  Select the `openid`, `profile`, and `email` scopes for OIDC.
 
 3.  Select **Save application**.
 4.  Keep the GitLab window open. You need the *Application Id* and *Application Secret Key* when you configure Mattermost.
@@ -39,11 +36,11 @@ Follow these steps to configure Mattermost to use GitLab as a Single Sign-on (SS
 
 1.  Log in to Mattermost, then go to **System Console \> Authentication \> OpenID Connect**.
 2.  Select **GitLab** as the service provider.
-3.  Enter the **GitLab Site URL** of your GitLab instance. If your GitLab instance is not set up to use SSL, start the URL with `http://` instead of `https://`. If you are using GitLab itself as your provider, use `gitlab.com`.
-4.  The **Discovery Endpoint** for OpenID Connect with GitLab is prepopulated with `https://gitlab.com/.well-known/openid-configuration`.
+3.  Enter the HTTPS **GitLab Site URL**, such as `https://gitlab.company.example` or `https://gitlab.com`.
+4.  Set **Discovery Endpoint** to your GitLab instance's full discovery URL. For hosted GitLab, use `https://gitlab.com/.well-known/openid-configuration`.
 5.  Paste the **Application ID** from GitLab as the **Client ID** in Mattermost.
 6.  Paste the **Application Secret Key** from GitLab as the **Client Secret** in Mattermost.
-7.  Update the `config.json` file and specify the scopes you selected in GitLab under the `GitLabSettings` property. At a minimum, `openid` is a required scope for Mattermost Enterprise and Professional, and `read_user` is a required scope for Mattermost Team Edition. Mattermost Team Edition does not work with scopes other than `read_user`. Changes to this setting require a server restart before taking effect.
+7.  Keep `GitLabSettings.Scope` set to `openid profile email`. The System Console sets these scopes for OIDC; a `read_user`-only configuration selects the legacy OAuth 2.0 flow instead.
 8.  Select **Save**.
 
 <Note>

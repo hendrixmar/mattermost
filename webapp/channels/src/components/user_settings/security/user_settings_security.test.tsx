@@ -10,6 +10,7 @@ import type {PasswordConfig} from 'mattermost-redux/selectors/entities/general';
 
 import {renderWithContext, screen, userEvent, waitFor, fireEvent} from 'tests/react_testing_utils';
 import Constants from 'utils/constants';
+import {TestHelper} from 'utils/test_helper';
 
 import SecurityTab from './user_settings_security';
 
@@ -76,11 +77,34 @@ describe('components/user_settings/display/UserSettingsDisplay', () => {
         expect(container).toMatchSnapshot();
     });
 
-    test('should match snapshot, enable openID', () => {
-        const props = {...requiredProps, enableSignUpWithGoogle: false, enableSaml: false, enableSignUpWithOpenId: true};
+    test('shows the OpenID account switch when enabled in config', () => {
+        const props = {
+            ...requiredProps,
+            user: TestHelper.getUserMock({...user, email: 'alice@example.com'}),
+            activeSection: 'signin',
+            enableSignUpWithGoogle: false,
+            enableSignUpWithOpenId: true,
+            enableSaml: false,
+        };
 
-        const {container} = renderWithContext(<SecurityTab {...props}/>);
-        expect(container).toMatchSnapshot();
+        renderWithContext(<SecurityTab {...props}/>);
+
+        const openIDLink = screen.getByRole('link', {name: 'Switch to Using OpenID SSO'});
+        expect(openIDLink.getAttribute('href')).toContain('new_type=openid');
+    });
+
+    test('does not show the OpenID account switch when disabled in config', () => {
+        const props = {
+            ...requiredProps,
+            activeSection: 'signin',
+            enableSignUpWithGoogle: false,
+            enableSignUpWithOpenId: false,
+            enableSaml: false,
+        };
+
+        renderWithContext(<SecurityTab {...props}/>);
+
+        expect(screen.queryByRole('link', {name: 'Switch to Using OpenID SSO'})).not.toBeInTheDocument();
     });
 
     test('should match snapshot, to email', () => {

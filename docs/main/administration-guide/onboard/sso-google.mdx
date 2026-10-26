@@ -1,17 +1,11 @@
 ---
 title: "Google Single Sign-On"
 ---
-<PlanAvailability slug="all-commercial" />
+Google OpenID Connect sign-in is available in Team Edition builds from this fork without a paid Mattermost license.
 
 ## Configuring Google Apps as a Single Sign-On (SSO) service
 
 Follow these steps to configure Mattermost to use Google as a Single Sign-on (SSO) service for team creation, account creation, and login.
-
-<Note>
-
-The [Google People API](https://developers.google.com/people) has replaced the Google+ API, which was deprecated by Google as of March 7th, 2019 [per their notice](https://developers.google.com/+/api-shutdown).
-
-</Note>
 
 ### Step 1: Create OpenID Connect project in Google API Manager
 
@@ -20,9 +14,9 @@ The [Google People API](https://developers.google.com/people) has replaced the G
 3.  Select **Create Credentials**, then select **OAuth client ID**.
 4.  Select the **Web application** as the application type.
 5.  Enter `Mattermost-<your-company-name>` as the **Name**, replacing `<your-company-name>` with the name of your organization.
-6.  Under **Authorized redirect URIs**, select **Add URL**, then enter `&#123;your-mattermost-url&#125;/signup/google/complete`. For example: `http://localhost:8065/signup/google/complete`.
+6.  Under **Authorized redirect URIs**, select **Add URL**, then enter your public Mattermost URL followed by `/signup/google/complete`, for example `https://mattermost.company.example/signup/google/complete`.
 7.  Select **Create**.
-8.  Copy and paste the **Your Client ID** and **Your Client Secret** values to a temporary location. You will enter these values in the Mattermost System Console.
+8.  Store **Your Client Secret** in your company's secret store and keep **Your Client ID** available. You will enter both values in the Mattermost System Console.
 
 ![image](/images/create-google-sso-credentials.png)
 
@@ -34,9 +28,9 @@ The [Google People API](https://developers.google.com/people) has replaced the G
 
 ![image](/images/google-sso-credentials.png)
 
-### Step 2: Enable Google People API
+### Step 2: Restrict access to company users
 
-Go to the [Google People API](https://developers.google.com/people), then select **Enable** in the header. This might take a few minutes to propagate through Google's systems.
+For a Google Workspace company application, configure an internal audience and enforce your company's access and MFA policies. This fork uses OIDC discovery and userinfo; enabling the Google People API is not required.
 
 ### Step 3: Configure Mattermost for Google Apps SSO
 
@@ -64,16 +58,16 @@ Instead of using the System Console, you can add the Google settings directly to
 
 ``` text
 "GoogleSettings": {
-      "Enable": true,
-      "Secret": "P-k9R-7E7ayX9LdddddWdXVg",
-      "Id": "1022ddddd5846-bkddddd4a1ddddd9d88j1kb6eqc.apps.googleusercontent.com",
-      "Scope": "profile openid email",
-      "AuthEndpoint": "",
-      "TokenEndpoint": "",
-      "UserApiEndpoint": "",
-      "DiscoveryEndpoint": "https://accounts.google.com/.well-known/openid-configuration",
-      "ButtonText": "",
-      "ButtonColor": ""
+      "Enable": true,
+      "Secret": "your-client-secret",
+      "Id": "your-client-id",
+      "Scope": "openid profile email",
+      "AuthEndpoint": "",
+      "TokenEndpoint": "",
+      "UserApiEndpoint": "",
+      "DiscoveryEndpoint": "https://accounts.google.com/.well-known/openid-configuration",
+      "ButtonText": "",
+      "ButtonColor": ""
 }
 ```
 

@@ -357,7 +357,7 @@ describe('components/login/Login', () => {
         expect(usernameInput).toHaveFocus();
     });
 
-    it('should handle openid text and color props', () => {
+    it('shows the generic OpenID login action for an unlicensed server', () => {
         const state = mergeObjects(baseState, {
             entities: {
                 general: {
@@ -377,9 +377,29 @@ describe('components/login/Login', () => {
         );
 
         const button = screen.getByRole('link', {name: 'OpenID Icon OpenID 2'});
-
+        expect(button.getAttribute('href')).toContain('/oauth/openid/login');
         expect(button.style.color).toBe('rgb(0, 255, 0)');
         expect(button.style.borderColor).toBe('rgb(0, 255, 0)');
+    });
+
+    it('does not show the generic OpenID login action when disabled in config', () => {
+        const state = mergeObjects(baseState, {
+            entities: {
+                general: {
+                    config: {
+                        EnableSignInWithEmail: 'true',
+                        EnableSignUpWithOpenId: 'false',
+                    },
+                },
+            },
+        });
+
+        renderWithContext(
+            <Login/>,
+            state,
+        );
+
+        expect(screen.queryByRole('link', {name: /OpenID Icon/})).not.toBeInTheDocument();
     });
 
     it('should redirect on login', async () => {

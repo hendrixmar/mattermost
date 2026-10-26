@@ -1,38 +1,44 @@
 ---
 title: "OpenID Connect Single Sign-On"
 ---
-<PlanAvailability slug="all-commercial" />
 
-Mattermost provides OpenID Connect support for [GitLab](/administration-guide/onboard/sso-gitlab), [Google Apps](/administration-guide/onboard/sso-google), and [Entra ID](/administration-guide/onboard/sso-entraid). With OpenID Connect, users can also use their login to Keycloak, Atlassian Crowd, Apple, Microsoft, Salesforce, Auth0, Ory.sh, Facebook, Okta, OneLogin, and Azure AD, as well as others, as a Single Sign-on (SSO) service for team creation, account creation, and user login.
+This fork includes OpenID Connect SSO in Team Edition without a paid license for **Google Apps**, **Entra ID**, **GitLab**, and **OpenID Connect (Other)**. The steps below use **OpenID Connect (Other)** for a company identity provider. Provider-specific instructions are available for [Google](/administration-guide/onboard/sso-google), [Entra ID](/administration-guide/onboard/sso-entraid), and [GitLab](/administration-guide/onboard/sso-gitlab). Legacy OAuth 2.0 licensing is unchanged.
 
-Follow these steps to configure a service provider using OpenID Connect.
+## Step 1: Create an OpenID Connect application
 
-## Step 1: Create an OpenID Connect Application
+1. Create a confidential client at your identity provider with the authorization-code flow and `client_secret_post` token authentication.
+2. Register the exact redirect URI `https://your-mattermost-host/signup/openid/complete`. Include the Mattermost subpath if your deployment uses one.
+3. Restrict access to the employees or groups that should use Mattermost. Enforce company MFA at the identity provider.
+4. Store the client secret in your deployment's secret store. Keep the client ID and the full discovery URL available for configuration.
 
-1.  Follow service provider documentation for creating an OpenID Connect application. Most OpenID Connect service providers require authorization of all redirect URIs.
-2.  In the appropriate field, enter `&#123;your-mattermost-url&#125;/signup/openid/complete` For example: `http://domain.com/signup/openid/complete`
-3.  Copy and paste values for the **Discovery Endpoint**, **Client ID**, and **Client Secret** values to a temporary location. You will enter these values when you configure Mattermost.
+The provider must expose a discovery document, JWKS signing keys, and a userinfo endpoint over HTTPS. Plain HTTP is accepted only for loopback testing. ID tokens must be signed and contain `iss`, `sub`, `aud`, `iat`, and `exp`.
+
+Return an email address in the ID token, the userinfo response, or both. The configured issuer is trusted to assert this address. The optional `email_verified` claim may be omitted, as it commonly is with Entra ID; an explicit `false` for a returned email is rejected. The userinfo `sub` must match the verified ID token's subject.
 
 ## Step 2: Configure Mattermost for an OpenID Connect SSO
 
-1.  Log in to Mattermost, then go to **System Console \> Authentication \> OpenID Connect**.
-2.  Select **OpenID Connect (Other)** as the service provider.
-3.  Enter the **Discovery Endpoint**.
-4.  Enter the **Client ID**.
-5.  Enter the **Client Secret**.
-6.  Specify a **Button Name** and **Button Color** for the OpenID Connect option on the Mattermost login page.
-7.  Select **Save**.
-8.  Restart your Mattermost server to see the changes take effect.
+1. Log in as a system administrator and open **System Console > Authentication > OpenID Connect**.
+2. Select **OpenID Connect (Other)**.
+3. Enter the full **Discovery Endpoint**, such as `https://login.company.example/.well-known/openid-configuration`.
+4. Enter the **Client ID** and **Client Secret**.
+5. Set the **Button Name** and **Button Color** for the login page.
+6. Enable **Use preferred username** if you want the provider's `preferred_username` claim to supply Mattermost usernames.
+7. Select **Save**. Configuration changes take effect without restarting the server.
+8. Open a private browser window and use the configured SSO button. Confirm that the expected employee profile appears after sign-in.
 
-<Note>
+For environment-managed deployments, use the [OpenID Connect configuration settings](/administration-guide/configure/authentication-configuration-settings#openid-connect-other-settings). Supply `MM_OPENIDSETTINGS_SECRET` through your secret store instead of committing the secret to source control.
 
-\- When Mattermost is configured to use OpenID Connect for user authentication, the following user attribute changes can't be made through the Mattermost API: first name, last name, or username. OpenID Connect must be the authoritative source for these user attributes. - Admins can configure Mattermost to use the `preferred_username` claim from the OpenID token as the Mattermost username. Enable the **Use preferred username** option in the provider's settings under **System Console \> Authentication \> OpenID Connect**. See the [authentication configuration settings](/administration-guide/configure/authentication-configuration-settings#openid-connect) for details. - The **Discovery Endpoint** setting can be used to determine the connectivity and availability of arbitrary hosts. System admins concerned about this can use custom admin roles to limit access to modifying these settings. See the [delegated granular administration](/administration-guide/onboard/delegated-granular-administration#edit-privileges-of-admin-roles-advanced)) documentation for details.
+If the identity provider is on a private network, permit its specific hostname through `ServiceSettings.AllowedUntrustedInternalConnections`. Do not disable TLS verification or allow all internal hosts.
 
-</Note>
+New employees need account creation enabled. Existing accounts with the same email are not linked automatically. Use the existing account's sign-in-method switch to migrate an email/password account.
+
+First name, last name, nickname, and username come from the provider's profile claims. Standard profile sync does not enable LDAP group provisioning or advanced custom-attribute sync.
 
 ## Sync user attributes from OpenID Connect claims
 
 <PlanAvailability slug="ent-plus" />
+
+Advanced custom-attribute sync still requires the Enterprise user-attributes feature and an enterprise OAuth claims provider. The community provider described above synchronizes standard profile fields only.
 
 From Mattermost v12.1, a [user attribute](/administration-guide/manage/admin/attribute-management) can be linked to a claim your OpenID Connect provider sends about the user, the same way attributes are linked to AD/LDAP or SAML attributes. The linked attributes are written every time a user signs in through **OpenID Connect (Other)**, including the sign-in that creates their account, and they can then drive [attribute-based access control](/administration-guide/manage/admin/attribute-based-access-control) policies.
 

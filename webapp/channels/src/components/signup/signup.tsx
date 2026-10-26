@@ -168,7 +168,7 @@ const Signup = ({onCustomizeHeader}: SignupProps) => {
             });
         }
 
-        if (isLicensed && enableSignUpWithGoogle) {
+        if (enableSignUpWithGoogle) {
             const url = `${Client4.getOAuthRoute()}/google/signup${search}`;
             externalLoginOptions.push({
                 id: 'google',
@@ -179,7 +179,7 @@ const Signup = ({onCustomizeHeader}: SignupProps) => {
             });
         }
 
-        if (isLicensed && enableSignUpWithOffice365) {
+        if (enableSignUpWithOffice365) {
             const url = `${Client4.getOAuthRoute()}/office365/signup${search}`;
             externalLoginOptions.push({
                 id: 'office365',
@@ -190,7 +190,7 @@ const Signup = ({onCustomizeHeader}: SignupProps) => {
             });
         }
 
-        if (isLicensed && enableSignUpWithOpenId) {
+        if (enableSignUpWithOpenId) {
             const url = `${Client4.getOAuthRoute()}/openid/signup${search}`;
             externalLoginOptions.push({
                 id: 'openid',

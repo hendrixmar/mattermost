@@ -24,16 +24,12 @@ func oauthAttributeSyncSource(service string) string {
 
 // oauthAttributeSyncEnabled reports whether a sign-in through service syncs
 // user attributes: the service is a sync source, the OpenIdAttributeSync kill
-// switch is off, and the license covers it (the OpenId feature, and the
-// Enterprise tier every write to user attributes requires).
+// switch is off, and the global Enterprise user-attributes feature is available.
 func (a *App) oauthAttributeSyncEnabled(service string) bool {
 	if oauthAttributeSyncSource(service) == "" || !a.Config().FeatureFlags.OpenIdAttributeSync {
 		return false
 	}
-	license := a.License()
-	return license != nil &&
-		model.SafeDereference(license.Features.OpenId) &&
-		model.MinimumEnterpriseLicense(license)
+	return model.MinimumEnterpriseLicense(a.License())
 }
 
 // syncOAuthUserAttributes writes the user attributes linked to claims of the

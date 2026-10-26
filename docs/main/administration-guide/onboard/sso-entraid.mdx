@@ -1,7 +1,7 @@
 ---
 title: "Entra ID Single Sign-On"
 ---
-<PlanAvailability slug="all-commercial" />
+Entra ID OpenID Connect sign-in is available in Team Edition builds from this fork without a paid Mattermost license. SAML and other enterprise features retain their existing licensing.
 
 ## Configuring EntraID as a Single Sign-On (SSO) service
 
@@ -52,10 +52,12 @@ Once the App Registration has been created, you can configure it further. See th
 1.  Log in to Mattermost, then go to **System Console \> Authentication \> OpenID Connect**.
 2.  Select **Entra ID** as the service provider.
 3.  Paste the **Directory (tenant) ID** from the Azure Portal as the **Directory (tenant) ID** in Mattermost.
-4.  The **Discovery Endpoint** for OpenID Connect with Entra ID is prepopulated with `https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration`.
+4.  Set **Discovery Endpoint** to `https://login.microsoftonline.com/your-tenant-id/v2.0/.well-known/openid-configuration`, replacing `your-tenant-id` with your company's Directory (tenant) ID. Use a tenant-specific endpoint for company-only access rather than `common`.
 5.  Paste the **Application (client) ID** from the Azure Portal as the **Client ID** in Mattermost.
 6.  Paste the **client secret** value from the Azure Portal as the **Client Secret** in Mattermost.
 7.  Select **Save**.
+
+Ensure the ID token or userinfo response includes the employee's email address. Add the `email` optional claim to the app registration if needed. Entra ID may omit `email_verified`; this fork trusts email claims from the configured issuer unless they are explicitly marked unverified.
 
 <Note>
 
@@ -86,15 +88,15 @@ Instead of using the System Console, you can add the Entra ID settings directly 
 
 ``` text
 "Office365Settings": {
-      "Enable": false,
-      "Secret": "i.hddd6Pu3--5dg~cRddddqOrBdd1a",
-      "Id": "28ddd714-1f2f-4f9c-9486-90b8dddd27",
+      "Enable": true,
+      "Secret": "your-client-secret",
+      "Id": "your-client-id",
       "Scope": "profile openid email",
       "AuthEndpoint": "",
       "TokenEndpoint": "",
       "UserApiEndpoint": "",
-      "DiscoveryEndpoint": "https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration",
-      "DirectoryId": "common"
+      "DiscoveryEndpoint": "https://login.microsoftonline.com/your-tenant-id/v2.0/.well-known/openid-configuration",
+      "DirectoryId": "your-tenant-id"
 }
 ```
 

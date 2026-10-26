@@ -65,14 +65,6 @@ func TestOAuthAttributeSyncEnabled(t *testing.T) {
 		assert.False(t, th.App.oauthAttributeSyncEnabled(model.ServiceOpenid))
 	})
 
-	t.Run("the license must include OpenID Connect", func(t *testing.T) {
-		license := licensed()
-		license.Features.OpenId = new(false)
-		th.App.Srv().SetLicense(license)
-		defer th.App.Srv().SetLicense(licensed())
-		assert.False(t, th.App.oauthAttributeSyncEnabled(model.ServiceOpenid))
-	})
-
 	t.Run("the license must be Enterprise or higher", func(t *testing.T) {
 		th.App.Srv().SetLicense(model.NewTestLicenseSKU(model.LicenseShortSkuProfessional, "openid"))
 		defer th.App.Srv().SetLicense(licensed())
@@ -171,7 +163,7 @@ func TestSyncUserAttributesFromClaimsWithoutLinks(t *testing.T) {
 // registry, so it does not run in parallel.
 func TestCompleteOAuthSyncsUserAttributes(t *testing.T) {
 	h := setupPropertySyncTest(t)
-	h.App.Srv().SetLicense(model.NewTestLicenseSKU(model.LicenseShortSkuEnterprise, "openid"))
+	h.App.Srv().SetLicense(model.NewTestLicenseSKU(model.LicenseShortSkuEnterprise))
 	h.App.UpdateConfig(func(cfg *model.Config) {
 		cfg.OpenIdSettings.Enable = new(true)
 		cfg.OpenIdSettings.Scope = new(OpenIDScope)
@@ -189,7 +181,7 @@ func TestCompleteOAuthSyncsUserAttributes(t *testing.T) {
 	require.NoError(t, err)
 
 	provider := newClaimsProvider()
-	provider.OAuthProvider.On("GetSSOSettings", mock.Anything, mock.Anything, model.ServiceOpenid).Return(&model.SSOSettings{}, nil)
+	provider.OAuthProvider.On("GetSSOSettings", mock.Anything, mock.Anything, model.ServiceOpenid, mock.Anything).Return(&model.SSOSettings{}, nil)
 	provider.OAuthProvider.On("GetUserFromJSON", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&model.User{
 		AuthData:  user.AuthData,
 		Email:     user.Email,

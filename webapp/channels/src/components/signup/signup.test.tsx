@@ -162,24 +162,37 @@ describe('components/signup/Signup', () => {
         expect(container).toMatchSnapshot();
     });
 
-    it('should match snapshot for all signup options enabled with isLicensed disabled', () => {
+    it('offers every configured OIDC provider without a paid license', () => {
         mockLicense = {IsLicensed: 'false', Cloud: 'false'};
 
-        const {container} = renderWithContext(
-            <Signup/>,
-        );
+        renderWithContext(<Signup/>);
 
-        expect(container).toMatchSnapshot();
+        const openIDLink = screen.getByRole('link', {name: /Open ID/});
+        expect(openIDLink.getAttribute('href')).toContain('/oauth/openid/signup');
+        expect(screen.getByRole('link', {name: /Google/}).getAttribute('href')).toContain('/oauth/google/signup');
+        expect(screen.getByRole('link', {name: /Entra ID/}).getAttribute('href')).toContain('/oauth/office365/signup');
+        expect(screen.queryByRole('link', {name: /SAML/})).not.toBeInTheDocument();
+        expect(screen.getByRole('link', {name: /GitLab/}).getAttribute('href')).toContain('/oauth/gitlab/signup');
     });
 
-    it('should match snapshot for all signup options enabled with EnableUserCreaton disabled', () => {
+    it('does not offer generic OpenID sign-up when disabled in config', () => {
+        mockLicense = {IsLicensed: 'false', Cloud: 'false'};
+        mockConfig.EnableSignUpWithOpenId = 'false';
+
+        renderWithContext(<Signup/>);
+
+        expect(screen.queryByRole('link', {name: /Open ID/})).not.toBeInTheDocument();
+    });
+
+    it('does not offer OIDC sign-up when user creation is disabled', () => {
+        mockLicense = {IsLicensed: 'false', Cloud: 'false'};
         mockConfig.EnableUserCreation = 'false';
 
-        const {container} = renderWithContext(
-            <Signup/>,
-        );
+        renderWithContext(<Signup/>);
 
-        expect(container).toMatchSnapshot();
+        for (const name of [/Open ID/, /Google/, /Entra ID/, /GitLab/]) {
+            expect(screen.queryByRole('link', {name})).not.toBeInTheDocument();
+        }
     });
 
     it('should create user, log in and redirect to invite teamname', async () => {

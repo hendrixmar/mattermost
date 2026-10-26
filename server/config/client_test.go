@@ -822,6 +822,81 @@ func TestGetClientConfig(t *testing.T) {
 	}
 }
 
+func TestLimitedClientConfigOIDCProvidersWithoutLicense(t *testing.T) {
+	providers := []struct {
+		service string
+		flag    string
+	}{
+		{model.ServiceGoogle, "EnableSignUpWithGoogle"},
+		{model.ServiceOffice365, "EnableSignUpWithOffice365"},
+		{model.ServiceGitlab, "EnableSignUpWithGitLab"},
+	}
+	for _, provider := range providers {
+		t.Run(provider.service, func(t *testing.T) {
+			cfg := &model.Config{}
+			cfg.SetDefaults()
+			settings := cfg.GetSSOService(provider.service)
+			*settings.Enable = true
+			*settings.Scope = "profile openid email"
+			if provider.service == model.ServiceGitlab {
+				*settings.ButtonText = "Company GitLab"
+				*settings.ButtonColor = "#123456"
+			}
+
+			props := GenerateLimitedClientConfig(cfg, "", nil)
+			for _, other := range providers {
+				want := "false"
+				if other.service == provider.service {
+					want = "true"
+				}
+				assert.Equal(t, want, props[other.flag], other.service)
+			}
+			if provider.service == model.ServiceGitlab {
+				assert.Equal(t, "Company GitLab", props["GitLabButtonText"])
+				assert.Equal(t, "#123456", props["GitLabButtonColor"])
+			}
+
+			*settings.Enable = false
+			assert.Equal(t, "false", GenerateLimitedClientConfig(cfg, "", nil)[provider.flag])
+			*settings.Enable = true
+			*settings.Scope = "custom-openid profile email"
+			assert.Equal(t, "false", GenerateLimitedClientConfig(cfg, "", nil)[provider.flag])
+		})
+	}
+}
+
+func TestLimitedClientConfigOpenID(t *testing.T) {
+	t.Parallel()
+
+	for _, testCase := range []struct {
+		name    string
+		enabled bool
+		license *model.License
+		want    string
+	}{
+		{name: "enabled without a license", enabled: true, want: "true"},
+		{name: "disabled without a license", enabled: false, want: "false"},
+		{name: "enabled without the OpenID license feature", enabled: true, license: model.NewTestLicenseSKU(model.LicenseShortSkuProfessional), want: "true"},
+	} {
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+			cfg := &model.Config{
+				OpenIdSettings: model.SSOSettings{
+					Enable:      new(testCase.enabled),
+					ButtonText:  new("Company SSO"),
+					ButtonColor: new("#123456"),
+				},
+			}
+			cfg.SetDefaults()
+
+			clientConfig := GenerateLimitedClientConfig(cfg, "", testCase.license)
+			assert.Equal(t, testCase.want, clientConfig["EnableSignUpWithOpenId"])
+			assert.Equal(t, "Company SSO", clientConfig["OpenIdButtonText"])
+			assert.Equal(t, "#123456", clientConfig["OpenIdButtonColor"])
+		})
+	}
+}
+
 func TestGenerateClientConfigLockProfileFieldsForEmailUsers(t *testing.T) {
 	for name, testCase := range map[string]struct {
 		license  *model.License

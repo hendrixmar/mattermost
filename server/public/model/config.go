@@ -1385,6 +1385,16 @@ type SSOSettings struct {
 	AdditionalScopes *string `access:"authentication_openid"` // telemetry: none
 }
 
+// HasOpenIDScope reports whether scopes contains the OpenID Connect scope token.
+func HasOpenIDScope(scopes string) bool {
+	for scope := range strings.FieldsSeq(scopes) {
+		if scope == ServiceOpenid {
+			return true
+		}
+	}
+	return false
+}
+
 func (s *SSOSettings) setDefaults(scope, authEndpoint, tokenEndpoint, userAPIEndpoint, buttonColor string) {
 	if s.Enable == nil {
 		s.Enable = new(false)

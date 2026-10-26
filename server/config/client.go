@@ -358,6 +358,17 @@ func GenerateLimitedClientConfig(c *model.Config, telemetryID string, license *m
 	props["PasswordRequireSymbol"] = strconv.FormatBool(*c.PasswordSettings.Symbol)
 	props["PasswordEnableForgotLink"] = strconv.FormatBool(*c.PasswordSettings.EnableForgotLink)
 
+	props["EnableSignUpWithGoogle"] = strconv.FormatBool(*c.GoogleSettings.Enable && model.HasOpenIDScope(*c.GoogleSettings.Scope))
+	props["EnableSignUpWithOffice365"] = strconv.FormatBool(*c.Office365Settings.Enable && model.HasOpenIDScope(*c.Office365Settings.Scope))
+	props["EnableSignUpWithGitLab"] = strconv.FormatBool(*c.GitLabSettings.Enable && model.HasOpenIDScope(*c.GitLabSettings.Scope))
+	props["EnableSignUpWithOpenId"] = strconv.FormatBool(*c.OpenIdSettings.Enable)
+	props["OpenIdButtonText"] = *c.OpenIdSettings.ButtonText
+	props["OpenIdButtonColor"] = *c.OpenIdSettings.ButtonColor
+	if model.HasOpenIDScope(*c.GitLabSettings.Scope) {
+		props["GitLabButtonText"] = *c.GitLabSettings.ButtonText
+		props["GitLabButtonColor"] = *c.GitLabSettings.ButtonColor
+	}
+
 	// Set default values for all options that require a license.
 	props["EnableCustomBrand"] = "false"
 	props["CustomBrandText"] = ""
@@ -366,11 +377,6 @@ func GenerateLimitedClientConfig(c *model.Config, telemetryID string, license *m
 	props["LdapLoginFieldName"] = ""
 	props["EnableSaml"] = "false"
 	props["SamlLoginButtonText"] = ""
-	props["EnableSignUpWithGoogle"] = "false"
-	props["EnableSignUpWithOffice365"] = "false"
-	props["EnableSignUpWithOpenId"] = "false"
-	props["OpenIdButtonText"] = ""
-	props["OpenIdButtonColor"] = ""
 	props["CWSURL"] = ""
 	props["EnableCustomBrand"] = strconv.FormatBool(*c.TeamSettings.EnableCustomBrand)
 	props["CustomBrandText"] = *c.TeamSettings.CustomBrandText
@@ -417,9 +423,6 @@ func GenerateLimitedClientConfig(c *model.Config, telemetryID string, license *m
 		}
 
 		if *license.Features.OpenId {
-			props["EnableSignUpWithOpenId"] = strconv.FormatBool(*c.OpenIdSettings.Enable)
-			props["OpenIdButtonColor"] = *c.OpenIdSettings.ButtonColor
-			props["OpenIdButtonText"] = *c.OpenIdSettings.ButtonText
 			props["EnableSignUpWithGitLab"] = strconv.FormatBool(*c.GitLabSettings.Enable)
 			props["GitLabButtonColor"] = *c.GitLabSettings.ButtonColor
 			props["GitLabButtonText"] = *c.GitLabSettings.ButtonText

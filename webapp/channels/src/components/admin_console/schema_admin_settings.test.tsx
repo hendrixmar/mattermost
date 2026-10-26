@@ -510,6 +510,44 @@ describe('components/admin_console/SchemaAdminSettings', () => {
         expect(mockValidate).toHaveBeenCalled();
     });
 
+    test.each([
+        ['an unlicensed self-hosted server', {IsLicensed: 'false', Cloud: 'false'}],
+        ['Cloud Starter', {IsLicensed: 'true', Cloud: 'true', SkuShortName: 'starter'}],
+    ])('allows saving generic OpenID settings on %s', async (_name, license) => {
+        const openIDSchema: AdminDefinitionSubSectionSchema = {
+            id: 'OpenIdSettings',
+            name: 'OpenID Connect',
+            settings: [{
+                key: 'openidType',
+                label: 'OpenID provider',
+                type: 'dropdown',
+                options: [{value: '', display_name: 'Disabled'}, {value: 'openid', display_name: 'OpenID Connect'}],
+            }],
+        };
+        const patchConfig = jest.fn(() => Promise.resolve({data: true}));
+        renderWithContext(
+            <SchemaAdminSettingsClass
+                {...DefaultProps}
+                config={{}}
+                environmentConfig={{}}
+                license={license}
+                schema={openIDSchema}
+                patchConfig={patchConfig}
+                intl={defaultIntl}
+            />,
+        );
+
+        const saveButton = screen.getByRole('button', {name: /save/i});
+        expect(saveButton).toBeDisabled();
+        await userEvent.selectOptions(screen.getByRole('combobox'), 'openid');
+        expect(saveButton).toBeEnabled();
+        await userEvent.click(saveButton);
+
+        await waitFor(() => {
+            expect(saveButton).toBeDisabled();
+        });
+    });
+
     test('should persist permissions from sections in a mixed schema', async () => {
         const permissionKey = 'Permissions.enableTeamCreation';
         const editRole = jest.fn().mockResolvedValue({});

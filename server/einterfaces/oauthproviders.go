@@ -5,6 +5,7 @@ package einterfaces
 
 import (
 	"io"
+	"net/http"
 
 	"github.com/mattermost/mattermost/server/public/model"
 	"github.com/mattermost/mattermost/server/public/shared/request"
@@ -12,8 +13,8 @@ import (
 
 type OAuthProvider interface {
 	GetUserFromJSON(rctx request.CTX, data io.Reader, tokenUser *model.User, settings *model.SSOSettings) (*model.User, error)
-	GetSSOSettings(rctx request.CTX, config *model.Config, service string) (*model.SSOSettings, error)
-	GetUserFromIdToken(rctx request.CTX, idToken string) (*model.User, error)
+	GetSSOSettings(rctx request.CTX, config *model.Config, service string, client *http.Client) (*model.SSOSettings, error)
+	GetUserFromIdToken(rctx request.CTX, idToken string, settings *model.SSOSettings, client *http.Client) (*model.User, error)
 	IsSameUser(rctx request.CTX, dbUser, oAuthUser *model.User) bool
 }
 

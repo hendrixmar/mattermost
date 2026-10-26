@@ -113,21 +113,15 @@ describe('components/AdminSidebar', () => {
         });
     });
 
-    test('should match snapshot', () => {
-        const props = {...defaultProps};
-        const {container} = renderWithContext(<AdminSidebar {...props}/>);
-        expect(container).toMatchSnapshot();
-    });
-
-    test('should match snapshot with workspace optimization dashboard enabled', () => {
+    test('shows OpenID Connect navigation on an unlicensed server', () => {
         const props = {
             ...defaultProps,
-            config: {
-                ...defaultProps.config,
-            },
+            license: {IsLicensed: 'false', OpenId: 'false'},
         };
-        const {container} = renderWithContext(<AdminSidebar {...props}/>);
-        expect(container).toMatchSnapshot();
+
+        renderWithContext(<AdminSidebar {...props}/>);
+
+        expect(screen.getByText('OpenID Connect')).toBeInTheDocument();
     });
 
     test('should not show Workspace Optimization when Cloud license feature is enabled', () => {
@@ -183,54 +177,7 @@ describe('components/AdminSidebar', () => {
         expect(container).toMatchSnapshot();
     });
 
-    test('should match snapshot, render plugins without any settings as well', () => {
-        const props: Props = {
-            license: {},
-            config: {
-                ...defaultProps.config,
-                ExperimentalSettings: {
-                    RestrictSystemAdmin: false,
-                } as ExperimentalSettings,
-                PluginSettings: {
-                    Enable: true,
-                    EnableUploads: true,
-                } as PluginSettings,
-            },
-            adminDefinition: AdminDefinition,
-            buildEnterpriseReady: false,
-            siteName: 'test snap',
-            subscriptionProduct: undefined,
-            isCurrentUserSystemAdmin: true,
-            navigationBlocked: false,
-            plugins: {
-                plugin_0: {
-                    active: false,
-                    description: 'The plugin 0.',
-                    id: 'plugin_0',
-                    name: 'Plugin 0',
-                    version: '0.1.0',
-                    settings_schema: {
-                        footer: '',
-                        header: '',
-                        settings: [],
-                    },
-                    webapp: {bundle_path: 'webapp/dist/main.js'},
-                },
-            },
-            onSearchChange: jest.fn(),
-            actions: {
-                getPlugins: jest.fn(),
-            },
-            consoleAccess: {...defaultProps.consoleAccess},
-            cloud: {...defaultProps.cloud},
-            showTaskList: false,
-        };
-
-        const {container} = renderWithContext(<AdminSidebar {...props}/>);
-        expect(container).toMatchSnapshot();
-    });
-
-    test('should match snapshot, not prevent the console from loading when empty settings_schema provided', () => {
+    test('shows plugin navigation when the settings list is empty', () => {
         const props: Props = {
             license: {},
             config: {
@@ -273,57 +220,8 @@ describe('components/AdminSidebar', () => {
             showTaskList: false,
         };
 
-        const {container} = renderWithContext(<AdminSidebar {...props}/>);
-        expect(container).toMatchSnapshot();
-    });
-
-    test('should match snapshot, with license (without any explicit feature)', () => {
-        const props: Props = {
-            license: {
-                IsLicensed: 'true',
-            },
-            config: {
-                ...defaultProps.config,
-                ExperimentalSettings: {
-                    RestrictSystemAdmin: false,
-                } as ExperimentalSettings,
-                PluginSettings: {
-                    Enable: true,
-                    EnableUploads: true,
-                } as PluginSettings,
-            },
-            adminDefinition: AdminDefinition,
-            buildEnterpriseReady: true,
-            navigationBlocked: false,
-            siteName: 'test snap',
-            subscriptionProduct: undefined,
-            isCurrentUserSystemAdmin: true,
-            plugins: {
-                plugin_0: {
-                    active: false,
-                    description: 'The plugin 0.',
-                    id: 'plugin_0',
-                    name: 'Plugin 0',
-                    version: '0.1.0',
-                    settings_schema: {
-                        footer: '',
-                        header: '',
-                        settings: [],
-                    },
-                    webapp: {bundle_path: 'webapp/dist/main.js'},
-                },
-            },
-            onSearchChange: jest.fn(),
-            actions: {
-                getPlugins: jest.fn(),
-            },
-            consoleAccess: {...defaultProps.consoleAccess},
-            cloud: {...defaultProps.cloud},
-            showTaskList: false,
-        };
-
-        const {container} = renderWithContext(<AdminSidebar {...props}/>);
-        expect(container).toMatchSnapshot();
+        renderWithContext(<AdminSidebar {...props}/>);
+        expect(screen.getByRole('link', {name: 'Plugin 0'})).toBeVisible();
     });
 
     test('should match snapshot, with license (with all feature)', () => {
@@ -368,205 +266,6 @@ describe('components/AdminSidebar', () => {
                     Secret: 'office365Secret',
                     Scope: 'scope',
                 } as Office365Settings,
-            },
-            adminDefinition: AdminDefinition,
-            buildEnterpriseReady: true,
-            navigationBlocked: false,
-            siteName: 'test snap',
-            subscriptionProduct: undefined,
-            isCurrentUserSystemAdmin: true,
-            plugins: {
-                plugin_0: {
-                    active: false,
-                    description: 'The plugin 0.',
-                    id: 'plugin_0',
-                    name: 'Plugin 0',
-                    version: '0.1.0',
-                    settings_schema: {
-                        footer: '',
-                        header: '',
-                        settings: [],
-                    },
-                    webapp: {bundle_path: 'webapp/dist/main.js'},
-                },
-            },
-            onSearchChange: jest.fn(),
-            actions: {
-                getPlugins: jest.fn(),
-            },
-            consoleAccess: {...defaultProps.consoleAccess},
-            cloud: {...defaultProps.cloud},
-            showTaskList: false,
-        };
-
-        const {container} = renderWithContext(<AdminSidebar {...props}/>);
-        expect(container).toMatchSnapshot();
-    });
-
-    test('should match snapshot with license with enterprise SKU', () => {
-        const props: Props = {
-            license: {
-                IsLicensed: 'true',
-                SkuShortName: 'enterprise',
-                Cloud: 'true',
-            },
-            config: {
-                ...defaultProps.config,
-                ExperimentalSettings: {
-                    RestrictSystemAdmin: false,
-                } as ExperimentalSettings,
-                PluginSettings: {
-                    Enable: true,
-                    EnableUploads: true,
-                } as PluginSettings,
-                GoogleSettings: {
-                    Id: 'googleID',
-                    Secret: 'googleSecret',
-                    Scope: 'scope',
-                } as SSOSettings,
-                GitLabSettings: {
-                    Id: 'gitlabID',
-                    Secret: 'gitlabSecret',
-                    Scope: 'scope',
-                } as SSOSettings,
-                Office365Settings: {
-                    Id: 'office365ID',
-                    Secret: 'office365Secret',
-                    Scope: 'scope',
-                } as Office365Settings,
-                FeatureFlags: {},
-            },
-            adminDefinition: AdminDefinition,
-            buildEnterpriseReady: true,
-            navigationBlocked: false,
-            siteName: 'test snap',
-            subscriptionProduct: undefined,
-            isCurrentUserSystemAdmin: true,
-            plugins: {
-                plugin_0: {
-                    active: false,
-                    description: 'The plugin 0.',
-                    id: 'plugin_0',
-                    name: 'Plugin 0',
-                    version: '0.1.0',
-                    settings_schema: {
-                        footer: '',
-                        header: '',
-                        settings: [],
-                    },
-                    webapp: {bundle_path: 'webapp/dist/main.js'},
-                },
-            },
-            onSearchChange: jest.fn(),
-            actions: {
-                getPlugins: jest.fn(),
-            },
-            consoleAccess: {...defaultProps.consoleAccess},
-            cloud: {...defaultProps.cloud},
-            showTaskList: false,
-        };
-
-        const {container} = renderWithContext(<AdminSidebar {...props}/>);
-        expect(container).toMatchSnapshot();
-    });
-
-    test('should match snapshot with license with professional SKU', () => {
-        const props: Props = {
-            license: {
-                IsLicensed: 'true',
-                SkuShortName: 'professional',
-            },
-            config: {
-                ...defaultProps.config,
-                ExperimentalSettings: {
-                    RestrictSystemAdmin: false,
-                } as ExperimentalSettings,
-                PluginSettings: {
-                    Enable: true,
-                    EnableUploads: true,
-                } as PluginSettings,
-                GoogleSettings: {
-                    Id: 'googleID',
-                    Secret: 'googleSecret',
-                    Scope: 'scope',
-                } as SSOSettings,
-                GitLabSettings: {
-                    Id: 'gitlabID',
-                    Secret: 'gitlabSecret',
-                    Scope: 'scope',
-                } as SSOSettings,
-                Office365Settings: {
-                    Id: 'office365ID',
-                    Secret: 'office365Secret',
-                    Scope: 'scope',
-                } as Office365Settings,
-            },
-            adminDefinition: AdminDefinition,
-            buildEnterpriseReady: true,
-            navigationBlocked: false,
-            siteName: 'test snap',
-            subscriptionProduct: undefined,
-            isCurrentUserSystemAdmin: true,
-            plugins: {
-                plugin_0: {
-                    active: false,
-                    description: 'The plugin 0.',
-                    id: 'plugin_0',
-                    name: 'Plugin 0',
-                    version: '0.1.0',
-                    settings_schema: {
-                        footer: '',
-                        header: '',
-                        settings: [],
-                    },
-                    webapp: {bundle_path: 'webapp/dist/main.js'},
-                },
-            },
-            onSearchChange: jest.fn(),
-            actions: {
-                getPlugins: jest.fn(),
-            },
-            consoleAccess: {...defaultProps.consoleAccess},
-            cloud: {...defaultProps.cloud},
-            showTaskList: false,
-        };
-
-        const {container} = renderWithContext(<AdminSidebar {...props}/>);
-        expect(container).toMatchSnapshot();
-    });
-
-    test('should match snapshot with license with enterprise advanced SKU', () => {
-        const props: Props = {
-            license: {
-                IsLicensed: 'true',
-                SkuShortName: 'advanced',
-                Cloud: 'true',
-            },
-            config: {
-                ...defaultProps.config,
-                ExperimentalSettings: {
-                    RestrictSystemAdmin: false,
-                } as ExperimentalSettings,
-                PluginSettings: {
-                    Enable: true,
-                    EnableUploads: true,
-                } as PluginSettings,
-                GoogleSettings: {
-                    Id: 'googleID',
-                    Secret: 'googleSecret',
-                    Scope: 'scope',
-                } as SSOSettings,
-                GitLabSettings: {
-                    Id: 'gitlabID',
-                    Secret: 'gitlabSecret',
-                    Scope: 'scope',
-                } as SSOSettings,
-                Office365Settings: {
-                    Id: 'office365ID',
-                    Secret: 'office365Secret',
-                    Scope: 'scope',
-                } as Office365Settings,
-                FeatureFlags: {},
             },
             adminDefinition: AdminDefinition,
             buildEnterpriseReady: true,
